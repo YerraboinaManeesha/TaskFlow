@@ -10,22 +10,19 @@ from database import (
 )
 
 
-# =========================================================
 # APP
-# =========================================================
 
 app = FastAPI()
 
 
-# =========================================================
 # CORS
-# =========================================================
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://taskflow-app-8b7p.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -33,9 +30,7 @@ app.add_middleware(
 )
 
 
-# =========================================================
 # MODELS
-# =========================================================
 
 class SignupRequest(BaseModel):
     name: str
@@ -70,9 +65,7 @@ class ProjectRequest(BaseModel):
     email: str
 
 
-# =========================================================
 # HOME
-# =========================================================
 
 @app.get("/")
 def home():
@@ -81,21 +74,17 @@ def home():
     }
 
 
-# =========================================================
 # SIGNUP
-# =========================================================
 
 @app.post("/signup")
 def signup(user: SignupRequest):
 
-    # Check password confirmation
     if user.password != user.confirmPassword:
         raise HTTPException(
             status_code=400,
             detail="Passwords do not match"
         )
 
-    # Check existing user
     existing_user = users_collection.find_one({
         "email": user.email
     })
@@ -106,7 +95,6 @@ def signup(user: SignupRequest):
             detail="Email already registered"
         )
 
-    # Create user
     users_collection.insert_one({
         "name": user.name,
         "email": user.email,
@@ -118,9 +106,7 @@ def signup(user: SignupRequest):
     }
 
 
-# =========================================================
 # LOGIN
-# =========================================================
 
 @app.post("/login")
 def login(user: LoginRequest):
@@ -143,28 +129,23 @@ def login(user: LoginRequest):
     }
 
 
-# =========================================================
 # RESET PASSWORD
-# =========================================================
 
 @app.post("/reset-password")
 def reset_password(data: ResetPasswordRequest):
 
-    # Check passwords
     if data.newPassword != data.confirmPassword:
         raise HTTPException(
             status_code=400,
             detail="Passwords do not match"
         )
 
-    # Check password length
     if len(data.newPassword) < 8:
         raise HTTPException(
             status_code=400,
             detail="Password must be at least 8 characters"
         )
 
-    # Find user
     existing_user = users_collection.find_one({
         "email": data.email
     })
@@ -175,7 +156,6 @@ def reset_password(data: ResetPasswordRequest):
             detail="Email not registered"
         )
 
-    # Update password
     result = users_collection.update_one(
         {
             "_id": existing_user["_id"]
@@ -198,9 +178,7 @@ def reset_password(data: ResetPasswordRequest):
     }
 
 
-# =========================================================
 # CREATE TASK
-# =========================================================
 
 @app.post("/tasks")
 def create_task(task: TaskRequest):
@@ -210,11 +188,7 @@ def create_task(task: TaskRequest):
         "description": task.description,
         "priority": task.priority,
         "dueDate": task.dueDate,
-
-        # New tasks start as Pending
         "status": "Pending",
-
-        # Task belongs to logged-in user
         "email": task.email
     }
 
@@ -226,9 +200,7 @@ def create_task(task: TaskRequest):
     }
 
 
-# =========================================================
-# GET TASKS FOR LOGGED-IN USER
-# =========================================================
+# GET TASKS
 
 @app.get("/tasks")
 def get_tasks(email: str):
@@ -239,16 +211,13 @@ def get_tasks(email: str):
         })
     )
 
-    # Convert ObjectId to string
     for task in tasks:
         task["_id"] = str(task["_id"])
 
     return tasks
 
 
-# =========================================================
 # COMPLETE TASK
-# =========================================================
 
 @app.put("/tasks/{task_id}/complete")
 def complete_task(
@@ -256,7 +225,6 @@ def complete_task(
     email: str
 ):
 
-    # Validate MongoDB ObjectId
     try:
         object_id = ObjectId(task_id)
 
@@ -266,7 +234,6 @@ def complete_task(
             detail="Invalid task ID"
         )
 
-    # Update only if task belongs to logged-in user
     result = tasks_collection.update_one(
         {
             "_id": object_id,
@@ -279,7 +246,6 @@ def complete_task(
         }
     )
 
-    # No matching task/user combination
     if result.matched_count == 0:
         raise HTTPException(
             status_code=404,
@@ -291,9 +257,7 @@ def complete_task(
     }
 
 
-# =========================================================
 # DELETE TASK
-# =========================================================
 
 @app.delete("/tasks/{task_id}")
 def delete_task(
@@ -301,7 +265,6 @@ def delete_task(
     email: str
 ):
 
-    # Validate MongoDB ObjectId
     try:
         object_id = ObjectId(task_id)
 
@@ -311,7 +274,6 @@ def delete_task(
             detail="Invalid task ID"
         )
 
-    # Delete only if task belongs to logged-in user
     result = tasks_collection.delete_one(
         {
             "_id": object_id,
@@ -319,7 +281,6 @@ def delete_task(
         }
     )
 
-    # Nothing was deleted
     if result.deleted_count == 0:
         raise HTTPException(
             status_code=404,
@@ -331,9 +292,7 @@ def delete_task(
     }
 
 
-# =========================================================
 # CREATE PROJECT
-# =========================================================
 
 @app.post("/projects")
 def create_project(project: ProjectRequest):
@@ -342,8 +301,6 @@ def create_project(project: ProjectRequest):
         "name": project.name,
         "description": project.description,
         "url": project.url,
-
-        # Project belongs to logged-in user
         "email": project.email
     }
 
@@ -355,9 +312,7 @@ def create_project(project: ProjectRequest):
     }
 
 
-# =========================================================
-# GET PROJECTS FOR LOGGED-IN USER
-# =========================================================
+# GET PROJECTS
 
 @app.get("/projects")
 def get_projects(email: str):
@@ -368,16 +323,13 @@ def get_projects(email: str):
         })
     )
 
-    # Convert ObjectId to string
     for project in projects:
         project["_id"] = str(project["_id"])
 
     return projects
 
 
-# =========================================================
 # DELETE PROJECT
-# =========================================================
 
 @app.delete("/projects/{project_id}")
 def delete_project(
@@ -385,7 +337,6 @@ def delete_project(
     email: str
 ):
 
-    # Validate MongoDB ObjectId
     try:
         object_id = ObjectId(project_id)
 
@@ -395,7 +346,6 @@ def delete_project(
             detail="Invalid project ID"
         )
 
-    # Delete only if project belongs to logged-in user
     result = projects_collection.delete_one(
         {
             "_id": object_id,
