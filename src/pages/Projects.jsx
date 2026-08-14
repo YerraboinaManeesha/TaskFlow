@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
@@ -7,7 +6,10 @@ function Projects() {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const savedUser = localStorage.getItem("taskflowUser");
+
   let currentUser = null;
 
   try {
@@ -36,7 +38,7 @@ function Projects() {
       setLoading(true);
 
       const response = await fetch(
-        `http://127.0.0.1:8000/projects?email=${encodeURIComponent(
+        `${API_URL}/projects?email=${encodeURIComponent(
           currentUser.email
         )}`
       );
@@ -44,7 +46,9 @@ function Projects() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || "Failed to fetch projects.");
+        throw new Error(
+          data.detail || "Failed to fetch projects."
+        );
       }
 
       setProjects(Array.isArray(data) ? data : []);
@@ -83,7 +87,7 @@ function Projects() {
     try {
       setSaving(true);
 
-      const response = await fetch("http://127.0.0.1:8000/projects", {
+      const response = await fetch(`${API_URL}/projects`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +103,9 @@ function Projects() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || "Failed to create project.");
+        throw new Error(
+          data.detail || "Failed to create project."
+        );
       }
 
       setProject({
@@ -124,7 +130,7 @@ function Projects() {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/projects/${projectId}?email=${encodeURIComponent(
+        `${API_URL}/projects/${projectId}?email=${encodeURIComponent(
           currentUser.email
         )}`,
         {
@@ -135,11 +141,15 @@ function Projects() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || "Failed to delete project.");
+        throw new Error(
+          data.detail || "Failed to delete project."
+        );
       }
 
       setProjects((previous) =>
-        previous.filter((item) => item._id !== projectId)
+        previous.filter(
+          (item) => String(item._id) !== String(projectId)
+        )
       );
     } catch (error) {
       console.error("Delete project error:", error);
@@ -222,6 +232,8 @@ function Projects() {
       fontSize: "14px",
       fontWeight: "700",
       cursor: "pointer",
+      transition:
+        "transform 0.2s ease, box-shadow 0.2s ease",
     },
 
     card: {
@@ -272,6 +284,8 @@ function Projects() {
       outline: "none",
       background: colors.inputBackground,
       color: colors.text,
+      transition:
+        "border-color 0.2s ease, box-shadow 0.2s ease",
     },
 
     textarea: {
@@ -286,6 +300,8 @@ function Projects() {
       outline: "none",
       background: colors.inputBackground,
       color: colors.text,
+      transition:
+        "border-color 0.2s ease, box-shadow 0.2s ease",
     },
 
     addButton: {
@@ -299,6 +315,8 @@ function Projects() {
       fontWeight: "700",
       cursor: saving ? "not-allowed" : "pointer",
       opacity: saving ? 0.7 : 1,
+      transition:
+        "transform 0.2s ease, box-shadow 0.2s ease",
     },
 
     emptyState: {
@@ -348,6 +366,8 @@ function Projects() {
       border: `1px solid ${colors.border}`,
       borderRadius: "12px",
       background: colors.itemBackground,
+      transition:
+        "transform 0.2s ease, box-shadow 0.2s ease",
     },
 
     projectIcon: {
@@ -404,6 +424,8 @@ function Projects() {
       fontSize: "13px",
       fontWeight: "700",
       cursor: "pointer",
+      transition:
+        "transform 0.2s ease, box-shadow 0.2s ease",
     },
 
     deleteButton: {
@@ -416,6 +438,7 @@ function Projects() {
       fontSize: "16px",
       fontWeight: "700",
       cursor: "pointer",
+      transition: "transform 0.2s ease",
     },
   };
 
@@ -429,12 +452,20 @@ function Projects() {
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
           }
 
-          button:hover {
-            opacity: 0.9;
+          .dashboard-button:hover,
+          .add-project-button:hover,
+          .open-project-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(37, 99, 235, 0.18);
           }
 
-          button:active {
-            opacity: 1;
+          .delete-project-button:hover {
+            transform: scale(1.05);
+          }
+
+          .project-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
           }
         `}
       </style>
@@ -449,6 +480,7 @@ function Projects() {
         </div>
 
         <button
+          className="dashboard-button"
           style={styles.dashboardButton}
           onClick={() => navigate("/dashboard")}
         >
@@ -457,14 +489,19 @@ function Projects() {
       </div>
 
       <div style={styles.card}>
-        <h2 style={styles.sectionTitle}>Add New Project</h2>
+        <h2 style={styles.sectionTitle}>
+          Add New Project
+        </h2>
 
         <p style={styles.sectionSubtitle}>
-          Add your project name, description and project link.
+          Add your project name, description and project
+          link.
         </p>
 
         <form onSubmit={handleSubmit}>
-          <label style={styles.label}>Project Name</label>
+          <label style={styles.label}>
+            Project Name
+          </label>
 
           <input
             style={styles.input}
@@ -478,7 +515,9 @@ function Projects() {
 
           <label style={styles.label}>
             Description{" "}
-            <span style={styles.optional}>(Optional)</span>
+            <span style={styles.optional}>
+              (Optional)
+            </span>
           </label>
 
           <textarea
@@ -490,7 +529,9 @@ function Projects() {
             rows="4"
           />
 
-          <label style={styles.label}>Project URL</label>
+          <label style={styles.label}>
+            Project URL
+          </label>
 
           <input
             style={styles.input}
@@ -503,6 +544,7 @@ function Projects() {
           />
 
           <button
+            className="add-project-button"
             type="submit"
             style={styles.addButton}
             disabled={saving}
@@ -513,7 +555,9 @@ function Projects() {
       </div>
 
       <div style={styles.card}>
-        <h2 style={styles.sectionTitle}>My Projects</h2>
+        <h2 style={styles.sectionTitle}>
+          My Projects
+        </h2>
 
         <p style={styles.sectionSubtitle}>
           Your saved project links will appear here.
@@ -521,7 +565,9 @@ function Projects() {
 
         {loading && (
           <div style={styles.emptyState}>
-            <p style={styles.emptyText}>Loading projects...</p>
+            <p style={styles.emptyText}>
+              Loading projects...
+            </p>
           </div>
         )}
 
@@ -529,10 +575,13 @@ function Projects() {
           <div style={styles.emptyState}>
             <div style={styles.emptyIcon}>▣</div>
 
-            <h3 style={styles.emptyTitle}>No projects yet</h3>
+            <h3 style={styles.emptyTitle}>
+              No projects yet
+            </h3>
 
             <p style={styles.emptyText}>
-              Add your first project and save its link here.
+              Add your first project and save its link
+              here.
             </p>
           </div>
         )}
@@ -540,8 +589,14 @@ function Projects() {
         {!loading && projects.length > 0 && (
           <div style={styles.projectList}>
             {projects.map((item) => (
-              <div key={item._id} style={styles.projectItem}>
-                <div style={styles.projectIcon}>▣</div>
+              <div
+                key={item._id}
+                className="project-item"
+                style={styles.projectItem}
+              >
+                <div style={styles.projectIcon}>
+                  ▣
+                </div>
 
                 <div style={styles.projectInfo}>
                   <h3 style={styles.projectName}>
@@ -554,20 +609,28 @@ function Projects() {
                     </p>
                   )}
 
-                  <p style={styles.projectUrl}>{item.url}</p>
+                  <p style={styles.projectUrl}>
+                    {item.url}
+                  </p>
                 </div>
 
                 <div style={styles.projectActions}>
                   <button
+                    className="open-project-button"
                     style={styles.openButton}
                     onClick={() => {
                       let projectUrl = item.url;
 
                       if (
-                        !projectUrl.startsWith("http://") &&
-                        !projectUrl.startsWith("https://")
+                        !projectUrl.startsWith(
+                          "http://"
+                        ) &&
+                        !projectUrl.startsWith(
+                          "https://"
+                        )
                       ) {
-                        projectUrl = "https://" + projectUrl;
+                        projectUrl =
+                          "https://" + projectUrl;
                       }
 
                       window.open(
@@ -581,8 +644,11 @@ function Projects() {
                   </button>
 
                   <button
+                    className="delete-project-button"
                     style={styles.deleteButton}
-                    onClick={() => handleDelete(item._id)}
+                    onClick={() =>
+                      handleDelete(item._id)
+                    }
                   >
                     ✕
                   </button>
@@ -597,4 +663,3 @@ function Projects() {
 }
 
 export default Projects;
-

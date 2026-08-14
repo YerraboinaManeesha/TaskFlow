@@ -59,7 +59,7 @@ function Dashboard() {
         }
 
         const response = await fetch(
-          `http://127.0.0.1:8000/tasks?email=${encodeURIComponent(
+           `${import.meta.env.VITE_API_URL}/tasks?email=${encodeURIComponent(
             loggedInUser.email
           )}`
         );

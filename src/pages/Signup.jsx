@@ -70,7 +70,7 @@ const Signup = () => {
       setLoading(true);
 
       const response = await fetch(
-        "http://127.0.0.1:8000/signup",
+       `${import.meta.env.VITE_API_URL || "https://taskflow-juo1.onrender.com"}/signup`,
         {
           method: "POST",
           headers: {

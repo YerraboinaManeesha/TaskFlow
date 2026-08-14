@@ -72,7 +72,7 @@ function Settings() {
         );
 
         const response = await fetch(
-          `http://127.0.0.1:8000/tasks?email=${email}`
+          `${import.meta.env.VITE_API_URL}/tasks?email=${email}`
         );
 
         const data = await response.json();

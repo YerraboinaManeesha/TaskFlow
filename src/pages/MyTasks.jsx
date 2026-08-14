@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
@@ -8,23 +9,20 @@ function MyTasks() {
 
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [notification, setNotification] = useState({
     type: "",
     message: "",
   });
-
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedAction, setSelectedAction] = useState("");
-
   const [processing, setProcessing] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const getLoggedInUser = () => {
     const savedUser = localStorage.getItem("taskflowUser");
 
-    if (!savedUser) {
-      return null;
-    }
+    if (!savedUser) return null;
 
     try {
       return JSON.parse(savedUser);
@@ -35,56 +33,53 @@ function MyTasks() {
   };
 
   const showNotification = (type, message) => {
-    setNotification({
-      type,
-      message,
-    });
+    setNotification({ type, message });
 
     setTimeout(() => {
-      setNotification({
-        type: "",
-        message: "",
-      });
+      setNotification({ type: "", message: "" });
     }, 3000);
   };
 
+  const fetchTasks = async () => {
+    const loggedInUser = getLoggedInUser();
+
+    if (!loggedInUser?.email) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const email = encodeURIComponent(loggedInUser.email);
+
+      const response = await fetch(
+        `${API_URL}/tasks?email=${email}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.detail || "Failed to fetch tasks."
+        );
+      }
+
+      setTasks(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Fetch Tasks Error:", error);
+      setTasks([]);
+
+      showNotification(
+        "error",
+        error.message || "Failed to load tasks."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      const loggedInUser = getLoggedInUser();
-
-      if (!loggedInUser || !loggedInUser.email) {
-        navigate("/login");
-        return;
-      }
-
-      try {
-        const email = encodeURIComponent(loggedInUser.email);
-
-        const response = await fetch(
-          `http://127.0.0.1:8000/tasks?email=${email}`
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.detail || "Failed to fetch tasks."
-          );
-        }
-
-        setTasks(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Fetch Tasks Error:", error);
-
-        showNotification(
-          "error",
-          error.message || "Failed to load tasks."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTasks();
   }, [navigate]);
 
@@ -102,16 +97,13 @@ function MyTasks() {
 
   const handleSaveChanges = async () => {
     if (!selectedTask || !selectedAction) {
-      showNotification(
-        "error",
-        "Please select an option."
-      );
+      showNotification("error", "Please select an option.");
       return;
     }
 
     const loggedInUser = getLoggedInUser();
 
-    if (!loggedInUser || !loggedInUser.email) {
+    if (!loggedInUser?.email) {
       setSelectedTask(null);
       navigate("/login");
       return;
@@ -125,7 +117,7 @@ function MyTasks() {
 
       if (selectedAction === "completed") {
         const response = await fetch(
-          `http://127.0.0.1:8000/tasks/${taskId}/complete?email=${email}`,
+          `${API_URL}/tasks/${taskId}/complete?email=${email}`,
           {
             method: "PUT",
           }
@@ -142,10 +134,7 @@ function MyTasks() {
         setTasks((previousTasks) =>
           previousTasks.map((task) =>
             String(task._id) === String(taskId)
-              ? {
-                  ...task,
-                  status: "Completed",
-                }
+              ? { ...task, status: "Completed" }
               : task
           )
         );
@@ -161,7 +150,7 @@ function MyTasks() {
 
       if (selectedAction === "delete") {
         const response = await fetch(
-          `http://127.0.0.1:8000/tasks/${taskId}?email=${email}`,
+          `${API_URL}/tasks/${taskId}?email=${email}`,
           {
             method: "DELETE",
           }
@@ -205,14 +194,11 @@ function MyTasks() {
   const colors = {
     pageBackground: darkMode ? "#0f172a" : "#f8fafc",
     cardBackground: darkMode ? "#1e293b" : "#ffffff",
-    taskBackground: darkMode ? "#1e293b" : "#ffffff",
     textPrimary: darkMode ? "#f8fafc" : "#1e293b",
     textSecondary: darkMode ? "#cbd5e1" : "#64748b",
     border: darkMode ? "#334155" : "#e2e8f0",
     emptyBorder: darkMode ? "#475569" : "#cbd5e1",
     modalBackground: darkMode ? "#1e293b" : "#ffffff",
-    modalText: darkMode ? "#f8fafc" : "#1e293b",
-    modalSecondaryText: darkMode ? "#cbd5e1" : "#64748b",
   };
 
   const styles = {
@@ -252,25 +238,12 @@ function MyTasks() {
       gap: "10px",
     },
 
-    dashboardButton: {
+    headerButton: {
       border: "none",
       borderRadius: "10px",
       background: "#2563eb",
       color: "#ffffff",
       padding: "11px 17px",
-      fontSize: "14px",
-      fontWeight: "700",
-      cursor: "pointer",
-      transition:
-        "transform 0.2s ease, box-shadow 0.2s ease",
-    },
-
-    addButton: {
-      border: "none",
-      borderRadius: "10px",
-      background: "#2563eb",
-      color: "#ffffff",
-      padding: "11px 18px",
       fontSize: "14px",
       fontWeight: "700",
       cursor: "pointer",
@@ -303,7 +276,7 @@ function MyTasks() {
       alignItems: "center",
       padding: "18px",
       borderRadius: "12px",
-      background: colors.taskBackground,
+      background: colors.cardBackground,
       border: `1px solid ${colors.border}`,
       transition:
         "transform 0.2s ease, box-shadow 0.2s ease",
@@ -340,21 +313,6 @@ function MyTasks() {
       fontWeight: "700",
     },
 
-    highPriority: {
-      background: "#fee2e2",
-      color: "#dc2626",
-    },
-
-    mediumPriority: {
-      background: "#fef3c7",
-      color: "#d97706",
-    },
-
-    lowPriority: {
-      background: "#dcfce7",
-      color: "#16a34a",
-    },
-
     dueDate: {
       fontSize: "12px",
       color: colors.textSecondary,
@@ -367,14 +325,11 @@ function MyTasks() {
       fontWeight: "700",
     },
 
-    pendingStatus: {
-      background: "#dbeafe",
-      color: "#2563eb",
-    },
-
-    completedStatus: {
-      background: "#dcfce7",
-      color: "#16a34a",
+    actions: {
+      display: "flex",
+      alignItems: "center",
+      marginLeft: "20px",
+      flexShrink: 0,
     },
 
     menuButton: {
@@ -388,13 +343,6 @@ function MyTasks() {
       fontWeight: "700",
       cursor: "pointer",
       transition: "transform 0.2s ease",
-    },
-
-    actions: {
-      display: "flex",
-      alignItems: "center",
-      marginLeft: "20px",
-      flexShrink: 0,
     },
 
     emptyState: {
@@ -431,17 +379,6 @@ function MyTasks() {
       color: colors.textSecondary,
     },
 
-    emptyButton: {
-      border: "none",
-      borderRadius: "10px",
-      background: "#2563eb",
-      color: "#ffffff",
-      padding: "12px 20px",
-      fontSize: "14px",
-      fontWeight: "700",
-      cursor: "pointer",
-    },
-
     notification: {
       position: "fixed",
       top: "25px",
@@ -457,24 +394,6 @@ function MyTasks() {
       fontSize: "14px",
       fontWeight: "700",
       boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-      animation: "slideIn 0.25s ease",
-    },
-
-    successNotification: {
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #86efac",
-    },
-
-    errorNotification: {
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "1px solid #fca5a5",
-    },
-
-    notificationIcon: {
-      fontSize: "18px",
-      fontWeight: "800",
     },
 
     modalOverlay: {
@@ -497,7 +416,6 @@ function MyTasks() {
       padding: "30px",
       boxSizing: "border-box",
       boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
-      animation: "modalIn 0.2s ease",
     },
 
     modalTitle: {
@@ -505,13 +423,13 @@ function MyTasks() {
       textAlign: "center",
       fontSize: "22px",
       fontWeight: "800",
-      color: colors.modalText,
+      color: colors.textPrimary,
     },
 
     modalText: {
       margin: "0 0 24px",
       textAlign: "center",
-      color: colors.modalSecondaryText,
+      color: colors.textSecondary,
       fontSize: "14px",
       lineHeight: "1.5",
     },
@@ -530,8 +448,6 @@ function MyTasks() {
       padding: "15px",
       borderRadius: "10px",
       cursor: "pointer",
-      transition:
-        "border 0.2s ease, background 0.2s ease",
       boxSizing: "border-box",
     },
 
@@ -588,28 +504,6 @@ function MyTasks() {
     <>
       <style>
         {`
-          @keyframes slideIn {
-            from {
-              opacity: 0;
-              transform: translateY(-8px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-
-          @keyframes modalIn {
-            from {
-              opacity: 0;
-              transform: scale(0.97);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-
           .task-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 18px rgba(0,0,0,0.08);
@@ -623,28 +517,62 @@ function MyTasks() {
           .menu-button:hover {
             transform: scale(1.05);
           }
+
+          @media (max-width: 700px) {
+            .mytasks-page {
+              padding: 25px 18px !important;
+            }
+
+            .mytasks-header {
+              flex-direction: column;
+              align-items: flex-start !important;
+            }
+
+            .mytasks-header-buttons {
+              width: 100%;
+            }
+
+            .mytasks-header-buttons button {
+              flex: 1;
+            }
+
+            .task-item {
+              align-items: flex-start !important;
+            }
+          }
         `}
       </style>
 
-      <div style={styles.page}>
+      <div className="mytasks-page" style={styles.page}>
         {notification.message && (
           <div
             style={{
               ...styles.notification,
-              ...(notification.type === "success"
-                ? styles.successNotification
-                : styles.errorNotification),
+              background:
+                notification.type === "success"
+                  ? "#dcfce7"
+                  : "#fee2e2",
+              color:
+                notification.type === "success"
+                  ? "#166534"
+                  : "#991b1b",
+              border:
+                notification.type === "success"
+                  ? "1px solid #86efac"
+                  : "1px solid #fca5a5",
             }}
           >
-            <span style={styles.notificationIcon}>
+            <span style={{ fontSize: "18px" }}>
               {notification.type === "success" ? "✓" : "!"}
             </span>
-
             <span>{notification.message}</span>
           </div>
         )}
 
-        <div style={styles.header}>
+        <div
+          className="mytasks-header"
+          style={styles.header}
+        >
           <div>
             <h1 style={styles.heading}>My Tasks</h1>
 
@@ -653,10 +581,13 @@ function MyTasks() {
             </p>
           </div>
 
-          <div style={styles.headerButtons}>
+          <div
+            className="mytasks-header-buttons"
+            style={styles.headerButtons}
+          >
             <button
               className="hover-button"
-              style={styles.dashboardButton}
+              style={styles.headerButton}
               onClick={() => navigate("/dashboard")}
             >
               ← Dashboard
@@ -664,7 +595,7 @@ function MyTasks() {
 
             <button
               className="hover-button"
-              style={styles.addButton}
+              style={styles.headerButton}
               onClick={() => navigate("/tasks")}
             >
               + Add Task
@@ -696,7 +627,7 @@ function MyTasks() {
 
               <button
                 className="hover-button"
-                style={styles.emptyButton}
+                style={styles.headerButton}
                 onClick={() => navigate("/tasks")}
               >
                 + Create Your First Task
@@ -739,11 +670,18 @@ function MyTasks() {
                       <span
                         style={{
                           ...styles.priority,
-                          ...(task.priority === "High"
-                            ? styles.highPriority
-                            : task.priority === "Medium"
-                            ? styles.mediumPriority
-                            : styles.lowPriority),
+                          background:
+                            task.priority === "High"
+                              ? "#fee2e2"
+                              : task.priority === "Medium"
+                              ? "#fef3c7"
+                              : "#dcfce7",
+                          color:
+                            task.priority === "High"
+                              ? "#dc2626"
+                              : task.priority === "Medium"
+                              ? "#d97706"
+                              : "#16a34a",
                         }}
                       >
                         {task.priority || "Normal"}
@@ -758,9 +696,14 @@ function MyTasks() {
                       <span
                         style={{
                           ...styles.status,
-                          ...(task.status === "Completed"
-                            ? styles.completedStatus
-                            : styles.pendingStatus),
+                          background:
+                            task.status === "Completed"
+                              ? "#dcfce7"
+                              : "#dbeafe",
+                          color:
+                            task.status === "Completed"
+                              ? "#16a34a"
+                              : "#2563eb",
                         }}
                       >
                         {task.status || "Pending"}
@@ -912,9 +855,7 @@ function MyTasks() {
                     !selectedAction || processing
                   }
                 >
-                  {processing
-                    ? "Saving..."
-                    : "Save Changes"}
+                  {processing ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </div>

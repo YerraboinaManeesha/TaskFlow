@@ -50,7 +50,7 @@ function ForgotPassword() {
       setLoading(true);
 
       const response = await fetch(
-        "http://127.0.0.1:8000/reset-password",
+        `${import.meta.env.VITE_API_URL}/reset-password`,
         {
           method: "POST",
           headers: {
@@ -74,9 +74,7 @@ function ForgotPassword() {
             data.message ||
             "Password update failed."
         );
-
         setMessageType("error");
-        setLoading(false);
         return;
       }
 
@@ -84,7 +82,6 @@ function ForgotPassword() {
         data.message ||
           "Password updated successfully!"
       );
-
       setMessageType("success");
 
       setFormData({
@@ -92,8 +89,6 @@ function ForgotPassword() {
         newPassword: "",
         confirmPassword: "",
       });
-
-      setLoading(false);
 
       setTimeout(() => {
         navigate("/login");
@@ -104,8 +99,8 @@ function ForgotPassword() {
       setMessage(
         "Unable to connect to the backend. Please try again."
       );
-
       setMessageType("error");
+    } finally {
       setLoading(false);
     }
   };
@@ -235,6 +230,7 @@ function ForgotPassword() {
               opacity: 0;
               transform: translateY(15px);
             }
+
             to {
               opacity: 1;
               transform: translateY(0);
@@ -246,6 +242,7 @@ function ForgotPassword() {
               opacity: 0;
               transform: translateY(-5px);
             }
+
             to {
               opacity: 1;
               transform: translateY(0);
