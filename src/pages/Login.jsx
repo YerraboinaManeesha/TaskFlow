@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -10,6 +11,7 @@ function Login() {
   });
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,7 +31,7 @@ function Login() {
 
     try {
       const response = await fetch(
-       `${import.meta.env.VITE_API_URL}/login`,
+        `${import.meta.env.VITE_API_URL}/login`,
         {
           method: "POST",
           headers: {
@@ -82,6 +84,7 @@ function Login() {
   const handleInputFocus = (e) => {
     e.currentTarget.style.border =
       "1px solid #2563eb";
+
     e.currentTarget.style.boxShadow =
       "0 0 0 3px rgba(37, 99, 235, 0.10)";
   };
@@ -89,6 +92,7 @@ function Login() {
   const handleInputBlur = (e) => {
     e.currentTarget.style.border =
       "1px solid #cbd5e1";
+
     e.currentTarget.style.boxShadow = "none";
   };
 
@@ -166,18 +170,88 @@ function Login() {
             Password
           </label>
 
-          <input
-            style={styles.input}
-            type="password"
-            name="password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={handleChange}
-            onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
-            autoComplete="current-password"
-            required
-          />
+          <div style={styles.passwordWrapper}>
+            <input
+              style={styles.passwordInput}
+              type={
+                showPassword
+                  ? "text"
+                  : "password"
+              }
+              name="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              autoComplete="current-password"
+              required
+            />
+
+            <button
+              type="button"
+              style={styles.passwordToggle}
+              onClick={() =>
+                setShowPassword(!showPassword)
+              }
+              aria-label={
+                showPassword
+                  ? "Hide password"
+                  : "Show password"
+              }
+              title={
+                showPassword
+                  ? "Hide password"
+                  : "Show password"
+              }
+            >
+              {showPassword ? (
+                /* Eye icon */
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  />
+                </svg>
+              ) : (
+                /* Eye with diagonal line */
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  />
+                  <line
+                    x1="4"
+                    y1="4"
+                    x2="20"
+                    y2="20"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
 
           {errorMessage && (
             <div style={styles.errorMessage}>
@@ -208,12 +282,14 @@ function Login() {
             onMouseEnter={(e) => {
               e.currentTarget.style.transform =
                 "translateY(-2px)";
+
               e.currentTarget.style.boxShadow =
                 "0 6px 16px rgba(37, 99, 235, 0.25)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform =
                 "translateY(0)";
+
               e.currentTarget.style.boxShadow =
                 "none";
             }}
@@ -393,6 +469,41 @@ const styles = {
       "border 0.2s ease, box-shadow 0.2s ease",
   },
 
+  passwordWrapper: {
+    position: "relative",
+    width: "100%",
+    marginBottom: "20px",
+  },
+
+  passwordInput: {
+    width: "100%",
+    padding: "13px 45px 13px 13px",
+    borderRadius: "10px",
+    border: "1px solid #cbd5e1",
+    fontSize: "15px",
+    boxSizing: "border-box",
+    outline: "none",
+    backgroundColor: "#ffffff",
+    color: "#1e293b",
+    transition:
+      "border 0.2s ease, box-shadow 0.2s ease",
+  },
+
+  passwordToggle: {
+    position: "absolute",
+    right: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    border: "none",
+    background: "transparent",
+    color: "#64748b",
+    cursor: "pointer",
+    padding: "5px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   errorMessage: {
     width: "100%",
     padding: "11px 12px",
@@ -497,7 +608,8 @@ if (
   styleElement.id =
     "taskflow-login-animations";
 
-  styleElement.innerHTML = animationStyles;
+  styleElement.innerHTML =
+    animationStyles;
 
   document.head.appendChild(styleElement);
 }

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -14,6 +15,11 @@ const Signup = () => {
   const [passwordError, setPasswordError] = useState("");
   const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,7 +76,7 @@ const Signup = () => {
       setLoading(true);
 
       const response = await fetch(
-       `${import.meta.env.VITE_API_URL || "https://taskflow-juo1.onrender.com"}/signup`,
+        `${import.meta.env.VITE_API_URL || "https://taskflow-juo1.onrender.com"}/signup`,
         {
           method: "POST",
           headers: {
@@ -174,16 +180,82 @@ const Signup = () => {
             Password
           </label>
 
-          <input
-            style={styles.input}
-            type="password"
-            name="password"
-            placeholder="Create a password"
-            value={formData.password}
-            onChange={handleChange}
-            autoComplete="new-password"
-            required
-          />
+          <div style={styles.passwordWrapper}>
+            <input
+              style={styles.passwordInput}
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Create a password"
+              value={formData.password}
+              onChange={handleChange}
+              autoComplete="new-password"
+              required
+            />
+
+            <button
+              type="button"
+              style={styles.passwordToggle}
+              onClick={() =>
+                setShowPassword(!showPassword)
+              }
+              aria-label={
+                showPassword
+                  ? "Hide password"
+                  : "Show password"
+              }
+              title={
+                showPassword
+                  ? "Hide password"
+                  : "Show password"
+              }
+            >
+              {showPassword ? (
+                /* Normal eye */
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  />
+                </svg>
+              ) : (
+                /* Eye with diagonal line */
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  />
+                  <line
+                    x1="4"
+                    y1="4"
+                    x2="20"
+                    y2="20"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
 
           {passwordError && (
             <p style={styles.error}>
@@ -195,22 +267,96 @@ const Signup = () => {
             Confirm Password
           </label>
 
-          <input
-            style={styles.input}
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm your password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            autoComplete="new-password"
-            required
-          />
+          <div style={styles.passwordWrapper}>
+            <input
+              style={styles.passwordInput}
+              type={
+                showConfirmPassword
+                  ? "text"
+                  : "password"
+              }
+              name="confirmPassword"
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              autoComplete="new-password"
+              required
+            />
+
+            <button
+              type="button"
+              style={styles.passwordToggle}
+              onClick={() =>
+                setShowConfirmPassword(
+                  !showConfirmPassword
+                )
+              }
+              aria-label={
+                showConfirmPassword
+                  ? "Hide confirm password"
+                  : "Show confirm password"
+              }
+              title={
+                showConfirmPassword
+                  ? "Hide confirm password"
+                  : "Show confirm password"
+              }
+            >
+              {showConfirmPassword ? (
+                /* Normal eye */
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  />
+                </svg>
+              ) : (
+                /* Eye with diagonal line */
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  />
+                  <line
+                    x1="4"
+                    y1="4"
+                    x2="20"
+                    y2="20"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
 
           <button
             style={{
               ...styles.button,
               opacity: loading ? 0.7 : 1,
-              cursor: loading ? "not-allowed" : "pointer",
+              cursor: loading
+                ? "not-allowed"
+                : "pointer",
             }}
             type="submit"
             disabled={loading}
@@ -328,6 +474,41 @@ const styles = {
       "border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
   },
 
+  passwordWrapper: {
+    position: "relative",
+    width: "100%",
+    marginBottom: "18px",
+  },
+
+  passwordInput: {
+    width: "100%",
+    padding: "13px 45px 13px 13px",
+    borderRadius: "10px",
+    border: "1px solid #cbd5e1",
+    fontSize: "15px",
+    boxSizing: "border-box",
+    outline: "none",
+    transition:
+      "border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
+  },
+
+  passwordToggle: {
+    position: "absolute",
+    right: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    border: "none",
+    background: "transparent",
+    color: "#64748b",
+    cursor: "pointer",
+    padding: "5px",
+    margin: "0",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "none",
+  },
+
   error: {
     color: "#dc2626",
     fontSize: "13px",
@@ -443,3 +624,4 @@ if (!document.head.contains(animationStyle)) {
 }
 
 export default Signup;
+

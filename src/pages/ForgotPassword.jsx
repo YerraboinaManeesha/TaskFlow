@@ -14,6 +14,10 @@ function ForgotPassword() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
+  // Password visibility
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -105,6 +109,33 @@ function ForgotPassword() {
     }
   };
 
+  // Eye icon
+  const EyeIcon = ({ visible }) => (
+    <svg
+      width="21"
+      height="21"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="3" />
+
+      {!visible && (
+        <line
+          x1="3"
+          y1="3"
+          x2="21"
+          y2="21"
+        />
+      )}
+    </svg>
+  );
+
   const styles = {
     page: {
       minHeight: "100vh",
@@ -176,7 +207,27 @@ function ForgotPassword() {
       fontWeight: "700",
     },
 
+    passwordWrapper: {
+      position: "relative",
+      width: "100%",
+      marginBottom: "20px",
+    },
+
     input: {
+      width: "100%",
+      padding: "13px 45px 13px 13px",
+      boxSizing: "border-box",
+      border: "1px solid #cbd5e1",
+      borderRadius: "10px",
+      fontSize: "15px",
+      outline: "none",
+      background: "#ffffff",
+      color: "#1e293b",
+      transition:
+        "border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
+    },
+
+    emailInput: {
       width: "100%",
       padding: "13px",
       marginBottom: "20px",
@@ -189,6 +240,23 @@ function ForgotPassword() {
       color: "#1e293b",
       transition:
         "border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
+    },
+
+    eyeButton: {
+      position: "absolute",
+      right: "12px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      width: "28px",
+      height: "28px",
+      padding: "0",
+      border: "none",
+      background: "transparent",
+      color: "#64748b",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
     },
 
     updateButton: {
@@ -264,6 +332,14 @@ function ForgotPassword() {
             transform: translateY(-1px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
           }
+
+          .eye-button:hover:not(:disabled) {
+            color: #2563eb;
+          }
+
+          .eye-button:focus {
+            outline: none;
+          }
         `}
       </style>
 
@@ -297,7 +373,7 @@ function ForgotPassword() {
 
             <input
               className="forgot-input"
-              style={styles.input}
+              style={styles.emailInput}
               type="email"
               name="email"
               placeholder="Enter your email"
@@ -312,35 +388,87 @@ function ForgotPassword() {
               New Password
             </label>
 
-            <input
-              className="forgot-input"
-              style={styles.input}
-              type="password"
-              name="newPassword"
-              placeholder="Enter new password"
-              value={formData.newPassword}
-              onChange={handleChange}
-              autoComplete="new-password"
-              required
-              disabled={loading}
-            />
+            <div style={styles.passwordWrapper}>
+              <input
+                className="forgot-input"
+                style={styles.input}
+                type={
+                  showNewPassword
+                    ? "text"
+                    : "password"
+                }
+                name="newPassword"
+                placeholder="Enter new password"
+                value={formData.newPassword}
+                onChange={handleChange}
+                autoComplete="new-password"
+                required
+                disabled={loading}
+              />
+
+              <button
+                type="button"
+                className="eye-button"
+                style={styles.eyeButton}
+                onClick={() =>
+                  setShowNewPassword(
+                    (previous) => !previous
+                  )
+                }
+                disabled={loading}
+                aria-label={
+                  showNewPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+              >
+                <EyeIcon visible={showNewPassword} />
+              </button>
+            </div>
 
             <label style={styles.label}>
               Confirm Password
             </label>
 
-            <input
-              className="forgot-input"
-              style={styles.input}
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm new password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              autoComplete="new-password"
-              required
-              disabled={loading}
-            />
+            <div style={styles.passwordWrapper}>
+              <input
+                className="forgot-input"
+                style={styles.input}
+                type={
+                  showConfirmPassword
+                    ? "text"
+                    : "password"
+                }
+                name="confirmPassword"
+                placeholder="Confirm new password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                autoComplete="new-password"
+                required
+                disabled={loading}
+              />
+
+              <button
+                type="button"
+                className="eye-button"
+                style={styles.eyeButton}
+                onClick={() =>
+                  setShowConfirmPassword(
+                    (previous) => !previous
+                  )
+                }
+                disabled={loading}
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+              >
+                <EyeIcon
+                  visible={showConfirmPassword}
+                />
+              </button>
+            </div>
 
             <button
               type="submit"
